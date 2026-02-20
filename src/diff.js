@@ -372,7 +372,7 @@ export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hou
   }
 
   const comparedClock = formatClock(previousSnapshot.fetchedAt, "12h");
-  const nowReference = currentSnapshot?.fetchedAt ?? Date.now();
+  const nowReference = currentSnapshot.fetchedAt ?? Date.now();
   const changes = [];
 
   const previousModel = previousSnapshot.normalized ?? {};
