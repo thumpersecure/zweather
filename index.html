@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.weather.gov; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
+    />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>zweather - honest weather forecast changes</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app">
+      <header class="app-header">
+        <div>
+          <h1>zweather</h1>
+          <p class="tagline">Honest forecasts: what changed, when, and how much.</p>
+        </div>
+        <button id="why-btn" class="secondary" type="button" aria-haspopup="dialog">
+          Why forecasts change
+        </button>
+      </header>
+
+      <main id="main-content">
+        <section class="panel" aria-labelledby="location-heading">
+          <h2 id="location-heading">Location</h2>
+          <form id="search-form" class="stack">
+            <label for="location-input">City, ZIP, or latitude,longitude</label>
+            <div class="row">
+              <input
+                id="location-input"
+                name="location"
+                placeholder="e.g. New York, 10001, or 40.71,-74.00"
+                autocomplete="off"
+                required
+              />
+              <button id="search-btn" type="submit">Search</button>
+            </div>
+            <button id="geo-btn" class="secondary" type="button">Use my location</button>
+          </form>
+          <ul id="search-results" class="search-results" aria-live="polite"></ul>
+          <p id="location-summary" class="muted">No location selected.</p>
+        </section>
+
+        <section class="panel" aria-labelledby="status-heading">
+          <h2 id="status-heading">Status</h2>
+          <div class="status-badges" aria-live="polite">
+            <span id="offline-badge" class="badge warn hidden">Offline</span>
+            <span id="confidence-badge" class="badge">Confidence: Unknown</span>
+          </div>
+          <p><strong>Last updated:</strong> <span id="last-updated">Never</span></p>
+          <p><strong>Compared to:</strong> <span id="compared-to">No previous snapshot</span></p>
+          <p id="data-source" class="muted">Data source: none loaded yet</p>
+          <div class="row">
+            <button id="refresh-btn" type="button">Refresh forecast</button>
+            <button id="open-settings-btn" class="secondary" type="button" aria-haspopup="dialog">
+              Settings
+            </button>
+          </div>
+          <p id="error-box" class="error hidden" role="alert"></p>
+        </section>
+
+        <section class="panel" aria-labelledby="now-heading">
+          <h2 id="now-heading">Now</h2>
+          <div id="now-card" class="card now-card">
+            <p class="muted">No forecast loaded.</p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="today-heading">
+          <h2 id="today-heading">Today (next hours)</h2>
+          <ul id="today-list" class="forecast-list"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="week-heading">
+          <h2 id="week-heading">Next 7 days</h2>
+          <ul id="week-list" class="forecast-list"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="changes-heading">
+          <h2 id="changes-heading">Forecast Changes</h2>
+          <div class="toggle-group" role="group" aria-label="Comparison mode">
+            <button id="mode-hourly" type="button" class="toggle active" aria-pressed="true">
+              Per hour
+            </button>
+            <button id="mode-daily" type="button" class="toggle" aria-pressed="false">
+              Per day
+            </button>
+          </div>
+          <p id="changes-intro" class="muted">Fetch another snapshot to compare changes.</p>
+          <ul id="changes-list" class="changes-list"></ul>
+          <p id="no-changes" class="success hidden"></p>
+
+          <h3>Snapshot timeline</h3>
+          <ol id="snapshot-timeline" class="timeline"></ol>
+        </section>
+
+        <section class="panel" aria-labelledby="raw-heading">
+          <h2 id="raw-heading">Transparency</h2>
+          <details id="raw-data-details">
+            <summary>Raw data (power users)</summary>
+            <pre id="raw-data">No raw data loaded.</pre>
+          </details>
+          <p class="privacy-note">
+            Privacy: Your locations and forecast history are stored only on this device.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <section id="a2hs-banner" class="a2hs hidden" aria-live="polite">
+      <p>Install zweather for quick, app-like access.</p>
+      <div class="row">
+        <button id="a2hs-install-btn" type="button">Add to Home Screen</button>
+        <button id="a2hs-dismiss-btn" class="secondary" type="button">Not now</button>
+      </div>
+    </section>
+
+    <dialog id="why-dialog" aria-labelledby="why-title">
+      <h2 id="why-title">Why forecasts change</h2>
+      <p>
+        Forecasts update as new observations arrive and weather models rerun. Small changes are
+        normal. zweather keeps history so you can see what changed and when.
+      </p>
+      <form method="dialog">
+        <button type="submit">Close</button>
+      </form>
+    </dialog>
+
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+      <form id="settings-form" class="stack">
+        <label for="temperature-unit">Temperature</label>
+        <select id="temperature-unit" name="temperatureUnit">
+          <option value="celsius">Celsius (C)</option>
+          <option value="fahrenheit">Fahrenheit (F)</option>
+        </select>
+
+        <label for="wind-unit">Wind speed</label>
+        <select id="wind-unit" name="windUnit">
+          <option value="kph">kph</option>
+          <option value="mph">mph</option>
+        </select>
+
+        <label for="time-format">Time format</label>
+        <select id="time-format" name="timeFormat">
+          <option value="24h">24-hour</option>
+          <option value="12h">12-hour</option>
+        </select>
+
+        <label class="inline">
+          <input id="auto-refresh" name="autoRefresh" type="checkbox" />
+          Auto-refresh every 30 minutes
+        </label>
+
+        <label for="retention-limit">Snapshot retention limit per location</label>
+        <input id="retention-limit" name="retentionLimit" type="number" min="3" max="50" />
+
+        <div class="row">
+          <button type="submit">Save</button>
+          <button id="close-settings-btn" type="button" class="secondary">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

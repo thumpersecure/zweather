@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="title desc">
+  <title id="title">zweather icon</title>
+  <desc id="desc">Stylized zweather app icon</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="38" fill="url(#bg)" />
+  <circle cx="54" cy="58" r="24" fill="#f8fafc" />
+  <path d="M52 132h86l-18 22H34z" fill="#bae6fd" opacity="0.9" />
+  <path
+    d="M70 70h62l-20 26h30l-40 48h-30l24-28H68z"
+    fill="#f8fafc"
+    stroke="#0b1220"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+</svg>
