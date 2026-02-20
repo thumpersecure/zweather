@@ -340,55 +340,39 @@ function buildMetrics(previousModel, currentModel, mode, changes) {
   };
 }
 
+function emptyDiffResult(mode, message) {
+  return {
+    mode,
+    hasBaseline: false,
+    hasChanges: false,
+    changes: [],
+    summary: [],
+    unchangedMessage: message,
+    comparedTo: null,
+    confidence: calculateConfidence([], false),
+    metrics: {
+      totalComparedWindows: 0,
+      changedWindows: 0,
+      unchangedWindows: 0,
+      changeRate: 0,
+      largestChange: null,
+      alertsChanges: 0,
+      metaChanges: 0,
+      categories: {},
+    },
+  };
+}
+
 export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hourly") {
   if (!currentSnapshot) {
-    return {
-      mode,
-      hasBaseline: false,
-      hasChanges: false,
-      changes: [],
-      summary: [],
-      unchangedMessage: "No current snapshot loaded.",
-      comparedTo: null,
-      confidence: calculateConfidence([], false),
-      metrics: {
-        totalComparedWindows: 0,
-        changedWindows: 0,
-        unchangedWindows: 0,
-        changeRate: 0,
-        largestChange: null,
-        alertsChanges: 0,
-        metaChanges: 0,
-        categories: {},
-      },
-    };
+    return emptyDiffResult(mode, "No current snapshot loaded.");
   }
-
   if (!previousSnapshot) {
-    return {
-      mode,
-      hasBaseline: false,
-      hasChanges: false,
-      changes: [],
-      summary: [],
-      unchangedMessage: "No previous snapshot to compare yet.",
-      comparedTo: null,
-      confidence: calculateConfidence([], false),
-      metrics: {
-        totalComparedWindows: 0,
-        changedWindows: 0,
-        unchangedWindows: 0,
-        changeRate: 0,
-        largestChange: null,
-        alertsChanges: 0,
-        metaChanges: 0,
-        categories: {},
-      },
-    };
+    return emptyDiffResult(mode, "No previous snapshot to compare yet.");
   }
 
   const comparedClock = formatClock(previousSnapshot.fetchedAt, "12h");
-  const nowReference = currentSnapshot?.fetchedAt ?? Date.now();
+  const nowReference = currentSnapshot.fetchedAt ?? Date.now();
   const changes = [];
 
   const previousModel = previousSnapshot.normalized ?? {};

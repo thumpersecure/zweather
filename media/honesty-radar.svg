@@ -1,38 +1,86 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 240" role="img" aria-labelledby="title desc">
   <title id="title">Forecast honesty visualization</title>
-  <desc id="desc">Layered weather bands with comparison lines</desc>
+  <desc id="desc">Layered weather bands with comparison lines showing forecast drift</desc>
   <defs>
     <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#0ea5e9" />
-      <stop offset="100%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
+    <linearGradient id="currentLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+    <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.02" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="dotGlow">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="420" height="240" rx="16" fill="#0b1220" />
-  <rect x="14" y="18" width="392" height="206" rx="14" fill="url(#g1)" opacity="0.22" />
-  <g stroke="#7dd3fc" stroke-width="2" fill="none" opacity="0.55">
+  <rect width="420" height="240" rx="16" fill="#060d1c" />
+  <rect x="8" y="8" width="404" height="224" rx="13" fill="url(#g1)" opacity="0.18" />
+
+  <g stroke="#334155" stroke-width="1" fill="none" opacity="0.5">
     <path d="M20 58H400" />
     <path d="M20 96H400" />
     <path d="M20 134H400" />
     <path d="M20 172H400" />
   </g>
-  <g stroke="#38bdf8" stroke-width="3" fill="none">
+
+  <path d="M24 188L78 176L128 166L182 170L234 150L286 138L338 132L392 116L392 210L24 210Z"
+        fill="url(#areaFill)" opacity="0.4" />
+
+  <g stroke="#475569" stroke-dasharray="6 4" stroke-width="2" fill="none" opacity="0.65">
+    <path d="M24 188L78 176L128 166L182 170L234 150L286 138L338 132L392 116">
+      <animate attributeName="stroke-dashoffset" from="80" to="0" dur="3s" repeatCount="indefinite" />
+    </path>
+  </g>
+
+  <path d="M24 166L76 154L126 158L180 126L232 110L286 120L338 108L392 90L392 210L24 210Z"
+        fill="url(#areaFill)" opacity="0.6" />
+
+  <g stroke="url(#currentLine)" stroke-width="2.5" fill="none" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round">
     <path d="M24 166L76 154L126 158L180 126L232 110L286 120L338 108L392 90" />
   </g>
-  <g stroke="#bae6fd" stroke-dasharray="6 6" stroke-width="3" fill="none">
-    <path d="M24 188L78 176L128 166L182 170L234 150L286 138L338 132L392 116" />
+
+  <g fill="#38bdf8" filter="url(#dotGlow)">
+    <circle cx="126" cy="158" r="4">
+      <animate attributeName="r" values="4;5;4" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="232" cy="110" r="4">
+      <animate attributeName="r" values="4;5;4" dur="2s" begin="0.6s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="338" cy="108" r="4">
+      <animate attributeName="r" values="4;5;4" dur="2s" begin="1.2s" repeatCount="indefinite" />
+    </circle>
   </g>
-  <g fill="#f8fafc">
-    <circle cx="126" cy="158" r="4.2" />
-    <circle cx="232" cy="110" r="4.2" />
-    <circle cx="338" cy="108" r="4.2" />
+
+  <g fill="#818cf8" opacity="0.5">
+    <circle cx="78" cy="176" r="2.5" />
+    <circle cx="182" cy="170" r="2.5" />
+    <circle cx="286" cy="138" r="2.5" />
   </g>
-  <text x="22" y="32" fill="#f8fafc" font-size="15" font-family="system-ui, sans-serif">
+
+  <text x="22" y="30" fill="#f8fafc" font-size="14" font-weight="600" font-family="system-ui, sans-serif" opacity="0.9">
     Honest forecast layers
   </text>
-  <text x="22" y="219" fill="#bae6fd" font-size="13" font-family="system-ui, sans-serif">
-    previous run
-  </text>
-  <text x="132" y="219" fill="#7dd3fc" font-size="13" font-family="system-ui, sans-serif">
-    current run
-  </text>
+
+  <g transform="translate(20, 212)" font-size="11" font-family="system-ui, sans-serif">
+    <circle cx="0" cy="-3" r="4" fill="#475569" />
+    <text x="9" y="0" fill="#94a3b8">previous run</text>
+    <circle cx="100" cy="-3" r="4" fill="#38bdf8" />
+    <text x="109" y="0" fill="#bae6fd">current run</text>
+  </g>
 </svg>
