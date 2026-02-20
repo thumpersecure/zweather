@@ -86,6 +86,12 @@
 
 html {
   scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--text);
 }
 
 body {
@@ -205,6 +211,7 @@ h1, h2, h3 {
   margin: 0 0 var(--space-sm) 0;
   line-height: 1.2;
   letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 h1 {
@@ -231,6 +238,18 @@ h3 {
 
 p {
   margin: var(--space-xs) 0;
+  text-wrap: pretty;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .tagline {
@@ -241,6 +260,7 @@ p {
 
 .muted {
   color: var(--muted);
+  font-size: 0.88rem;
 }
 
 /* ─── Glass Panel ──────────────────────────────────── */
@@ -251,11 +271,18 @@ p {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-xl) calc(var(--space-xl) + 2px);
+  padding: var(--space-xl);
   margin-bottom: var(--space-lg);
-  box-shadow: var(--shadow);
+  box-shadow:
+    var(--shadow),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
   position: relative;
   overflow: hidden;
+  transition: border-color var(--duration-slow) var(--ease-smooth);
+}
+
+.panel:hover {
+  border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 20%);
 }
 
 .panel::before {
@@ -265,7 +292,7 @@ p {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
   pointer-events: none;
 }
 
@@ -520,10 +547,36 @@ button:disabled::after {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
+  cursor: pointer;
 }
 
 .inline input {
   width: auto;
+}
+
+input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9bbd' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
 }
 
 /* ─── Status Badges ────────────────────────────────── */
@@ -747,14 +800,29 @@ button:disabled::after {
   transform: translateX(3px);
 }
 
-.change-item.temperature { border-left-color: #f97316; }
+.change-item.temperature {
+  border-left-color: #f97316;
+  background: color-mix(in srgb, var(--card) 96%, #f97316 4%);
+}
 .change-item.precip_probability,
-.change-item.precip_amount { border-left-color: #3b82f6; }
-.change-item.wind { border-left-color: #a855f7; }
-.change-item.condition { border-left-color: #22c55e; }
+.change-item.precip_amount {
+  border-left-color: #3b82f6;
+  background: color-mix(in srgb, var(--card) 96%, #3b82f6 4%);
+}
+.change-item.wind {
+  border-left-color: #a855f7;
+  background: color-mix(in srgb, var(--card) 96%, #a855f7 4%);
+}
+.change-item.condition {
+  border-left-color: #22c55e;
+  background: color-mix(in srgb, var(--card) 96%, #22c55e 4%);
+}
 .change-item.alerts_added,
 .change-item.alerts_removed,
-.change-item.alerts_updated { border-left-color: #f43f5e; }
+.change-item.alerts_updated {
+  border-left-color: #f43f5e;
+  background: color-mix(in srgb, var(--card) 96%, #f43f5e 4%);
+}
 
 .change-head {
   display: flex;
@@ -872,7 +940,7 @@ button:disabled::after {
 .meter {
   margin-top: var(--space-sm);
   width: 100%;
-  height: 0.5rem;
+  height: 0.4rem;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--border) 50%, transparent);
   overflow: hidden;
@@ -990,14 +1058,27 @@ details pre {
 /* ─── Dialogs ──────────────────────────────────────── */
 
 dialog {
-  width: min(640px, 92vw);
+  width: min(560px, 92vw);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: var(--panel-solid);
   color: var(--text);
-  padding: var(--space-xl);
+  padding: var(--space-2xl);
   box-shadow: var(--shadow-lg);
   animation: dialogEnter var(--duration-slow) var(--ease-out);
+}
+
+dialog h2 {
+  font-size: 1.3rem;
+  margin-bottom: var(--space-lg);
+}
+
+dialog p {
+  line-height: 1.65;
+}
+
+dialog form button[type="submit"] {
+  min-width: 6rem;
 }
 
 @keyframes dialogEnter {
@@ -1188,5 +1269,39 @@ dialog::backdrop {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .reveal-target {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Print ────────────────────────────────────────── */
+
+@media print {
+  body::before,
+  .a2hs,
+  .skip-link,
+  .header-actions,
+  #search-form,
+  #geo-btn,
+  .toggle-group,
+  .row button,
+  #raw-data-details {
+    display: none !important;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    background: #fff;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
   }
 }
