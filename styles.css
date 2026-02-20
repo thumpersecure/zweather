@@ -26,7 +26,6 @@
   --shadow: 0 8px 32px rgba(2, 6, 16, 0.4);
   --shadow-lg: 0 20px 60px rgba(2, 6, 16, 0.5);
   --glass-blur: 16px;
-  --radius-sm: 0.5rem;
   --radius: 0.85rem;
   --radius-lg: 1.2rem;
   --radius-xl: 1.5rem;
@@ -671,6 +670,14 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: var(--space-sm);
 }
 
+.forecast-list > li.muted {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  font-style: italic;
+}
+
 .forecast-row {
   display: grid;
   grid-template-columns: minmax(6.5rem, 1fr) 1fr;
@@ -684,6 +691,10 @@ input[type="number"]::-webkit-outer-spin-button {
     border-color var(--duration) var(--ease-smooth),
     background-color var(--duration) var(--ease-smooth),
     transform var(--duration-fast) var(--ease-spring);
+}
+
+.forecast-row:nth-child(even) {
+  background: color-mix(in srgb, var(--card) 85%, var(--bg) 15%);
 }
 
 .forecast-row:hover {
@@ -1111,6 +1122,9 @@ dialog::backdrop {
   left: var(--space-md);
   right: var(--space-md);
   bottom: var(--space-md);
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
   background: var(--panel-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1129,36 +1143,6 @@ dialog::backdrop {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* ─── Loading Skeleton ─────────────────────────────── */
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--card) 25%,
-    color-mix(in srgb, var(--card) 70%, var(--border)) 50%,
-    var(--card) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
-  border-radius: var(--radius-sm);
-}
-
-.skeleton-text {
-  height: 1em;
-  width: 60%;
-  margin: var(--space-xs) 0;
-}
-
-.skeleton-block {
-  height: 4rem;
-  width: 100%;
 }
 
 /* ─── Scrollbar ────────────────────────────────────── */

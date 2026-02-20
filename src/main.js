@@ -114,9 +114,7 @@ function createElement(tag, className, text) {
 }
 
 function clearChildren(element) {
-  while (element.firstChild) {
-    element.removeChild(element.firstChild);
-  }
+  element.replaceChildren();
 }
 
 function showError(message) {
@@ -137,11 +135,7 @@ function setLoading(loading, label = "Refresh forecast") {
   elements.quickRefreshButton.disabled = loading || !state.currentLocation;
   elements.compareLatestButton.disabled = loading || !state.currentLocation;
   elements.refreshButton.textContent = loading ? "Refreshing\u2026" : label;
-  if (loading) {
-    elements.refreshButton.classList.add("loading-pulse");
-  } else {
-    elements.refreshButton.classList.remove("loading-pulse");
-  }
+  elements.refreshButton.classList.toggle("loading-pulse", loading);
 }
 
 function updateOfflineBadge() {
@@ -392,9 +386,8 @@ function renderTodayList() {
     return;
   }
 
-  for (const [index, hour] of nextHours.entries()) {
+  for (const hour of nextHours) {
     const item = createElement("li", "forecast-row");
-    item.style.animationDelay = `${index * 40}ms`;
     const label = createElement(
       "strong",
       "",
@@ -423,9 +416,8 @@ function renderWeekList() {
     elements.weekList.append(createElement("li", "muted", "No daily rows available."));
     return;
   }
-  for (const [index, day] of dailyRows.slice(0, 7).entries()) {
+  for (const day of dailyRows.slice(0, 7)) {
     const item = createElement("li", "forecast-row");
-    item.style.animationDelay = `${index * 50}ms`;
     const date = createElement("strong", "", formatDayLabel(day.date));
     const details = createElement("div", "forecast-meta");
     details.append(
@@ -501,9 +493,8 @@ function renderChanges() {
     elements.noChanges.classList.remove("hidden");
     return;
   }
-  for (const [index, change] of state.diff.summary.entries()) {
+  for (const change of state.diff.summary) {
     const item = createElement("li", `change-item ${change.type}`);
-    item.style.animationDelay = `${index * 50}ms`;
     const head = createElement("div", "change-head");
     head.append(
       createElement("span", "change-tag", formatChangeTag(change.type)),
@@ -522,7 +513,6 @@ function renderTimeline() {
   }
   for (const [index, snapshot] of state.snapshots.slice(0, 10).entries()) {
     const item = createElement("li", "");
-    item.style.animationDelay = `${index * 60}ms`;
     const prefix = index === 0 ? "Latest" : `Snapshot ${index + 1}`;
     const stamp = createElement("time", "", formatDateTime(snapshot.fetchedAt, state.settings.timeFormat));
     stamp.dateTime = snapshot.fetchedAt;
@@ -593,33 +583,17 @@ function renderStatus() {
   }
 }
 
+const WEATHER_THEME_MAP = new Map([
+  ...[0, 1].map((c) => [c, "clear"]),
+  ...[2, 3, 45, 48].map((c) => [c, "cloudy"]),
+  ...[95, 96, 99].map((c) => [c, "storm"]),
+  ...[71, 73, 75, 77, 85, 86].map((c) => [c, "snow"]),
+  ...[51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].map((c) => [c, "rain"]),
+]);
+
 function applyWeatherTheme() {
-  if (!state.currentSnapshot) {
-    document.body.dataset.weatherTheme = "default";
-    return;
-  }
-  const code = Number(state.currentSnapshot.normalized?.current?.weatherCode ?? -1);
-  if ([0, 1].includes(code)) {
-    document.body.dataset.weatherTheme = "clear";
-    return;
-  }
-  if ([2, 3, 45, 48].includes(code)) {
-    document.body.dataset.weatherTheme = "cloudy";
-    return;
-  }
-  if ([95, 96, 99].includes(code)) {
-    document.body.dataset.weatherTheme = "storm";
-    return;
-  }
-  if ([71, 73, 75, 77, 85, 86].includes(code)) {
-    document.body.dataset.weatherTheme = "snow";
-    return;
-  }
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
-    document.body.dataset.weatherTheme = "rain";
-    return;
-  }
-  document.body.dataset.weatherTheme = "default";
+  const code = Number(state.currentSnapshot?.normalized?.current?.weatherCode ?? -1);
+  document.body.dataset.weatherTheme = WEATHER_THEME_MAP.get(code) ?? "default";
 }
 
 function renderSearchResults() {
@@ -632,7 +606,6 @@ function renderSearchResults() {
     const button = createElement("button", "", result.name);
     button.type = "button";
     button.dataset.index = String(index);
-    button.style.animationDelay = `${index * 40}ms`;
     button.addEventListener("click", async () => {
       await selectLocation(result);
       state.searchResults = [];
@@ -1004,18 +977,15 @@ async function init() {
   setupServiceWorker();
   setupScrollReveal();
 
+  readSnapshotPair();
+  recalculateDiff();
+  renderAll();
+
   if (state.currentLocation) {
-    readSnapshotPair();
-    recalculateDiff();
-    renderAll();
     startAutoRefreshTimer();
     if (navigator.onLine) {
       await refreshForecast({ silent: true });
     }
-  } else {
-    readSnapshotPair();
-    recalculateDiff();
-    renderAll();
   }
 }
 
