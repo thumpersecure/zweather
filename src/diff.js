@@ -275,14 +275,20 @@ function compareMeta(previousSnapshot, currentSnapshot, comparedClock) {
 }
 
 function sortChangesByImpact(changes) {
-  return changes
-    .slice()
-    .sort((a, b) => getChangeImpact(b) - getChangeImpact(a))
-    .sort((a, b) => {
-      const aTime = Date.parse(a.key) || 0;
-      const bTime = Date.parse(b.key) || 0;
+  return changes.slice().sort((a, b) => {
+    const impactDelta = getChangeImpact(b) - getChangeImpact(a);
+    if (impactDelta !== 0) {
+      return impactDelta;
+    }
+    const aParsed = Date.parse(a.key);
+    const bParsed = Date.parse(b.key);
+    const aTime = Number.isFinite(aParsed) ? aParsed : 0;
+    const bTime = Number.isFinite(bParsed) ? bParsed : 0;
+    if (aTime !== bTime) {
       return aTime - bTime;
-    });
+    }
+    return String(a.type ?? "").localeCompare(String(b.type ?? ""));
+  });
 }
 
 function buildMetrics(previousModel, currentModel, mode, changes) {
