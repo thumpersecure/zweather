@@ -21,12 +21,45 @@
           <h1>zweather</h1>
           <p class="tagline">Honest forecasts: what changed, when, and how much.</p>
         </div>
-        <button id="why-btn" class="secondary" type="button" aria-haspopup="dialog">
-          Why forecasts change
-        </button>
+        <div class="row header-actions">
+          <button id="why-btn" class="secondary" type="button" aria-haspopup="dialog">
+            Why forecasts change
+          </button>
+          <button id="open-settings-btn" class="secondary" type="button" aria-haspopup="dialog">
+            Settings
+          </button>
+        </div>
       </header>
 
       <main id="main-content">
+        <section class="panel full-width hero-panel" aria-labelledby="hero-heading">
+          <div class="hero-layout">
+            <div class="stack">
+              <p class="eyebrow">Forecast honesty mode</p>
+              <h2 id="hero-heading">See what weather changed, not just what it says now.</h2>
+              <p class="muted">
+                zweather saves forecast snapshots over time so you can compare what the forecast
+                said before versus now, with timestamps and confidence.
+              </p>
+              <div class="row">
+                <button id="quick-la-btn" class="secondary" type="button">
+                  Try Los Angeles, California
+                </button>
+                <button id="quick-refresh-btn" type="button">Refresh now</button>
+              </div>
+            </div>
+            <img
+              src="./media/honesty-radar.svg"
+              class="hero-media"
+              alt=""
+              width="420"
+              height="240"
+              loading="lazy"
+              aria-hidden="true"
+            />
+          </div>
+        </section>
+
         <section class="panel" aria-labelledby="location-heading">
           <h2 id="location-heading">Location</h2>
           <form id="search-form" class="stack">
@@ -35,7 +68,7 @@
               <input
                 id="location-input"
                 name="location"
-                placeholder="e.g. New York, 10001, or 40.71,-74.00"
+                placeholder="e.g. Los Angeles, 90012, or 34.0522,-118.2437"
                 autocomplete="off"
                 required
               />
@@ -56,13 +89,57 @@
           <p><strong>Last updated:</strong> <span id="last-updated">Never</span></p>
           <p><strong>Compared to:</strong> <span id="compared-to">No previous snapshot</span></p>
           <p id="data-source" class="muted">Data source: none loaded yet</p>
+          <p id="honesty-summary" class="muted">
+            Honesty summary: we need two snapshots for side-by-side comparison.
+          </p>
           <div class="row">
             <button id="refresh-btn" type="button">Refresh forecast</button>
-            <button id="open-settings-btn" class="secondary" type="button" aria-haspopup="dialog">
-              Settings
+            <button id="compare-latest-btn" class="secondary" type="button">
+              Re-run comparison
             </button>
           </div>
           <p id="error-box" class="error hidden" role="alert"></p>
+        </section>
+
+        <section class="panel full-width" aria-labelledby="honesty-heading">
+          <h2 id="honesty-heading">Honesty report</h2>
+          <p id="stability-reason" class="muted">
+            We calculate confidence from how much the forecast shifts between snapshots.
+          </p>
+          <div class="insight-grid">
+            <article class="insight-card">
+              <h3>Stability score</h3>
+              <p id="stability-score" class="metric-value">--</p>
+              <div class="meter" aria-hidden="true">
+                <span id="stability-meter" class="meter-fill"></span>
+              </div>
+            </article>
+            <article class="insight-card">
+              <h3>Changed windows</h3>
+              <p id="metric-changed" class="metric-value">--</p>
+              <p class="muted">Compared forecast windows that changed.</p>
+            </article>
+            <article class="insight-card">
+              <h3>Stable windows</h3>
+              <p id="metric-unchanged" class="metric-value">--</p>
+              <p class="muted">Compared windows with no material change.</p>
+            </article>
+            <article class="insight-card">
+              <h3>Largest shift</h3>
+              <p id="metric-largest" class="metric-value">--</p>
+              <p class="muted">Most significant movement in latest comparison.</p>
+            </article>
+          </div>
+          <div class="insight-grid compact">
+            <article class="insight-card">
+              <h3>Alert changes</h3>
+              <p id="metric-alerts" class="metric-value">--</p>
+            </article>
+            <article class="insight-card">
+              <h3>Snapshots saved</h3>
+              <p id="metric-snapshots" class="metric-value">--</p>
+            </article>
+          </div>
         </section>
 
         <section class="panel" aria-labelledby="now-heading">
@@ -70,6 +147,14 @@
           <div id="now-card" class="card now-card">
             <p class="muted">No forecast loaded.</p>
           </div>
+        </section>
+
+        <section class="panel" aria-labelledby="trend-heading">
+          <h2 id="trend-heading">Next 24h temperature trend</h2>
+          <div id="temp-trend" class="trend-card" role="img" aria-live="polite">
+            <p id="trend-empty" class="muted">Load forecast data to view trend.</p>
+          </div>
+          <p id="trend-summary" class="muted">No trend data yet.</p>
         </section>
 
         <section class="panel" aria-labelledby="today-heading">
@@ -93,7 +178,7 @@
             </button>
           </div>
           <p id="changes-intro" class="muted">Fetch another snapshot to compare changes.</p>
-          <ul id="changes-list" class="changes-list"></ul>
+          <ul id="changes-list" class="changes-list" aria-live="polite"></ul>
           <p id="no-changes" class="success hidden"></p>
 
           <h3>Snapshot timeline</h3>
@@ -126,6 +211,10 @@
       <p>
         Forecasts update as new observations arrive and weather models rerun. Small changes are
         normal. zweather keeps history so you can see what changed and when.
+      </p>
+      <p class="muted">
+        Confidence in zweather reflects forecast stability over time, not guaranteed weather
+        certainty.
       </p>
       <form method="dialog">
         <button type="submit">Close</button>

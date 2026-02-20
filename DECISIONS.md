@@ -167,3 +167,8 @@ Adjustment policy:
 - Global governmental alert feeds are not uniformly available keylessly.
 - App uses NWS alerts when available; otherwise alerts are shown as unavailable/empty.
 - Open-Meteo does not always expose explicit model run time in payload; UI shows that as "not provided" when absent.
+
+## 7) Example data privacy decision
+
+- No personal/user geodata is hardcoded anywhere in source examples.
+- The quick-start and placeholder example location is **Los Angeles, California**.

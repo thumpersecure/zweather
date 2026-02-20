@@ -227,3 +227,60 @@ test("captures alert and metadata changes", () => {
   assert.equal(types.has("provider"), true);
   assert.equal(types.has("units"), true);
 });
+
+test("provides honesty metrics for compared windows", () => {
+  const previous = makeSnapshot({
+    fetchedAt: "2026-02-20T09:12:00.000Z",
+    hourly: [
+      {
+        time: "2026-02-21T15:00:00.000Z",
+        temperatureC: 10,
+        precipProbability: 20,
+        precipMm: 0.2,
+        windKph: 12,
+        weatherCode: 2,
+        conditionLabel: "Partly cloudy",
+      },
+      {
+        time: "2026-02-21T16:00:00.000Z",
+        temperatureC: 10,
+        precipProbability: 20,
+        precipMm: 0.2,
+        windKph: 12,
+        weatherCode: 2,
+        conditionLabel: "Partly cloudy",
+      },
+    ],
+    daily: [],
+  });
+  const current = makeSnapshot({
+    fetchedAt: "2026-02-20T10:30:00.000Z",
+    hourly: [
+      {
+        time: "2026-02-21T15:00:00.000Z",
+        temperatureC: 13,
+        precipProbability: 40,
+        precipMm: 1.0,
+        windKph: 20,
+        weatherCode: 61,
+        conditionLabel: "Slight rain",
+      },
+      {
+        time: "2026-02-21T16:00:00.000Z",
+        temperatureC: 10,
+        precipProbability: 20,
+        precipMm: 0.2,
+        windKph: 12,
+        weatherCode: 2,
+        conditionLabel: "Partly cloudy",
+      },
+    ],
+    daily: [],
+  });
+  const diff = buildForecastDiff(previous, current, "hourly");
+  assert.equal(diff.metrics.totalComparedWindows, 2);
+  assert.equal(diff.metrics.changedWindows, 1);
+  assert.equal(diff.metrics.unchangedWindows, 1);
+  assert.equal(diff.metrics.changeRate, 0.5);
+  assert.ok(diff.metrics.largestChange);
+});

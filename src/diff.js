@@ -285,6 +285,61 @@ function sortChangesByImpact(changes) {
     });
 }
 
+function buildMetrics(previousModel, currentModel, mode, changes) {
+  const seriesKey = mode === "hourly" ? "hourly" : "daily";
+  const keyName = mode === "hourly" ? "time" : "date";
+  const previousMap = buildMapByKey(previousModel?.[seriesKey], keyName);
+  const currentMap = buildMapByKey(currentModel?.[seriesKey], keyName);
+  const comparedKeys = [];
+  for (const key of currentMap.keys()) {
+    if (previousMap.has(key)) {
+      comparedKeys.push(key);
+    }
+  }
+  const comparedSet = new Set(comparedKeys);
+  const changedWindowKeys = new Set(
+    changes
+      .filter((change) => change.granularity === mode && comparedSet.has(change.key))
+      .map((change) => change.key)
+  );
+  const numericCandidates = changes.filter(
+    (change) =>
+      change.granularity === mode &&
+      ["temperature", "precip_probability", "precip_amount", "wind"].includes(change.type) &&
+      Number.isFinite(Number(change.delta))
+  );
+  const largestChange = numericCandidates
+    .slice()
+    .sort((a, b) => Math.abs(Number(b.delta)) - Math.abs(Number(a.delta)))[0];
+  const alertsChanges = changes.filter((change) => change.granularity === "alerts").length;
+  const metaChanges = changes.filter((change) => change.granularity === "meta").length;
+  const categories = changes.reduce((accumulator, change) => {
+    accumulator[change.type] = (accumulator[change.type] ?? 0) + 1;
+    return accumulator;
+  }, {});
+  const totalComparedWindows = comparedKeys.length;
+  const changedWindows = changedWindowKeys.size;
+  const unchangedWindows = Math.max(0, totalComparedWindows - changedWindows);
+  return {
+    totalComparedWindows,
+    changedWindows,
+    unchangedWindows,
+    changeRate: totalComparedWindows > 0 ? changedWindows / totalComparedWindows : 0,
+    largestChange: largestChange
+      ? {
+          type: largestChange.type,
+          label: largestChange.label,
+          from: largestChange.from,
+          to: largestChange.to,
+          delta: largestChange.delta,
+        }
+      : null,
+    alertsChanges,
+    metaChanges,
+    categories,
+  };
+}
+
 export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hourly") {
   if (!currentSnapshot) {
     return {
@@ -296,6 +351,16 @@ export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hou
       unchangedMessage: "No current snapshot loaded.",
       comparedTo: null,
       confidence: calculateConfidence([], false),
+      metrics: {
+        totalComparedWindows: 0,
+        changedWindows: 0,
+        unchangedWindows: 0,
+        changeRate: 0,
+        largestChange: null,
+        alertsChanges: 0,
+        metaChanges: 0,
+        categories: {},
+      },
     };
   }
 
@@ -309,6 +374,16 @@ export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hou
       unchangedMessage: "No previous snapshot to compare yet.",
       comparedTo: null,
       confidence: calculateConfidence([], false),
+      metrics: {
+        totalComparedWindows: 0,
+        changedWindows: 0,
+        unchangedWindows: 0,
+        changeRate: 0,
+        largestChange: null,
+        alertsChanges: 0,
+        metaChanges: 0,
+        categories: {},
+      },
     };
   }
 
@@ -367,6 +442,7 @@ export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hou
   const sorted = sortChangesByImpact(changes);
   const summary = sorted.slice(0, 12);
   const hasChanges = changes.length > 0;
+  const metrics = buildMetrics(previousModel, currentModel, mode, sorted);
   return {
     mode,
     hasBaseline: true,
@@ -378,5 +454,6 @@ export function buildForecastDiff(previousSnapshot, currentSnapshot, mode = "hou
       : `No forecast changes since ${formatClock(previousSnapshot.fetchedAt, "12h")}.`,
     comparedTo: previousSnapshot.fetchedAt ?? null,
     confidence: calculateConfidence(changes, true),
+    metrics,
   };
 }
