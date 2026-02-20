@@ -284,3 +284,61 @@ test("provides honesty metrics for compared windows", () => {
   assert.equal(diff.metrics.changeRate, 0.5);
   assert.ok(diff.metrics.largestChange);
 });
+
+test("summary ranks higher-impact changes before lower-impact ones", () => {
+  const time1 = "2026-02-21T01:00:00.000Z";
+  const time2 = "2026-02-21T02:00:00.000Z";
+  const previous = makeSnapshot({
+    fetchedAt: "2026-02-20T09:12:00.000Z",
+    hourly: [
+      {
+        time: time1,
+        temperatureC: 10,
+        precipProbability: 10,
+        precipMm: 0,
+        windKph: 10,
+        weatherCode: 1,
+        conditionLabel: "Mainly clear",
+      },
+      {
+        time: time2,
+        temperatureC: 10,
+        precipProbability: 10,
+        precipMm: 0,
+        windKph: 10,
+        weatherCode: 1,
+        conditionLabel: "Mainly clear",
+      },
+    ],
+    daily: [],
+  });
+  const current = makeSnapshot({
+    fetchedAt: "2026-02-20T10:30:00.000Z",
+    hourly: [
+      {
+        time: time1,
+        temperatureC: 10,
+        precipProbability: 40,
+        precipMm: 0,
+        windKph: 10,
+        weatherCode: 1,
+        conditionLabel: "Mainly clear",
+      },
+      {
+        time: time2,
+        temperatureC: 0,
+        precipProbability: 10,
+        precipMm: 0,
+        windKph: 10,
+        weatherCode: 1,
+        conditionLabel: "Mainly clear",
+      },
+    ],
+    daily: [],
+  });
+
+  const diff = buildForecastDiff(previous, current, "hourly");
+  assert.equal(diff.hasChanges, true);
+  assert.equal(diff.summary[0].type, "temperature");
+  assert.equal(diff.summary[0].key, time2);
+});
