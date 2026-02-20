@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 240" role="img" aria-labelledby="title desc">
+  <title id="title">Forecast honesty visualization</title>
+  <desc id="desc">Layered weather bands with comparison lines</desc>
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+  <rect width="420" height="240" rx="16" fill="#0b1220" />
+  <rect x="14" y="18" width="392" height="206" rx="14" fill="url(#g1)" opacity="0.22" />
+  <g stroke="#7dd3fc" stroke-width="2" fill="none" opacity="0.55">
+    <path d="M20 58H400" />
+    <path d="M20 96H400" />
+    <path d="M20 134H400" />
+    <path d="M20 172H400" />
+  </g>
+  <g stroke="#38bdf8" stroke-width="3" fill="none">
+    <path d="M24 166L76 154L126 158L180 126L232 110L286 120L338 108L392 90" />
+  </g>
+  <g stroke="#bae6fd" stroke-dasharray="6 6" stroke-width="3" fill="none">
+    <path d="M24 188L78 176L128 166L182 170L234 150L286 138L338 132L392 116" />
+  </g>
+  <g fill="#f8fafc">
+    <circle cx="126" cy="158" r="4.2" />
+    <circle cx="232" cy="110" r="4.2" />
+    <circle cx="338" cy="108" r="4.2" />
+  </g>
+  <text x="22" y="32" fill="#f8fafc" font-size="15" font-family="system-ui, sans-serif">
+    Honest forecast layers
+  </text>
+  <text x="22" y="219" fill="#bae6fd" font-size="13" font-family="system-ui, sans-serif">
+    previous run
+  </text>
+  <text x="132" y="219" fill="#7dd3fc" font-size="13" font-family="system-ui, sans-serif">
+    current run
+  </text>
+</svg>

@@ -28,3 +28,10 @@ export const DEFAULT_SETTINGS = {
 
 export const DEFAULT_COMPARISON_MODE = "hourly";
 export const AUTO_REFRESH_MS = 30 * 60 * 1000;
+
+export const LOS_ANGELES_EXAMPLE = {
+  name: "Los Angeles, California",
+  latitude: 34.0522,
+  longitude: -118.2437,
+  source: "example",
+};

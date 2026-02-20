@@ -32,8 +32,10 @@ No API key is required for the default app flow (demo mode is effectively the de
 ## Features
 
 - Geolocation + manual search (city / ZIP-like text / `lat,lon`)
+- Quick-start example button: **Los Angeles, California**
 - Home forecast:
   - Now
+  - 24h temperature trend chart
   - Today (next hours)
   - Next 7 days
 - Honest changes view:
@@ -41,6 +43,11 @@ No API key is required for the default app flow (demo mode is effectively the de
   - diff summaries with previous -> current values + timestamps
   - explicit unchanged state
   - snapshot timeline (latest 10)
+- Honesty report:
+  - stability score (0-100)
+  - changed vs stable compared windows
+  - largest shift highlight
+  - alert-change count
 - Settings:
   - C/F
   - kph/mph
@@ -62,6 +69,7 @@ No API key is required for the default app flow (demo mode is effectively the de
 
 ```text
 .
+├── AGENT_EXECUTION_REPORT.md
 ├── DECISIONS.md
 ├── LICENSE
 ├── PRODUCT_SPEC.md
@@ -71,6 +79,8 @@ No API key is required for the default app flow (demo mode is effectively the de
 │   └── icon-512.svg
 ├── index.html
 ├── manifest.json
+├── media/
+│   └── honesty-radar.svg
 ├── package.json
 ├── service-worker.js
 ├── src/
@@ -131,6 +141,7 @@ iOS may not show `beforeinstallprompt`, so the app includes docs and avoids aggr
 - **Alerts empty**: alerts feed coverage varies by region; non-US areas may show none.
 - **Offline mode**: app shell + previously saved snapshots are available; refresh needs network.
 - **Geolocation denied**: use manual city/ZIP-like query or `lat,lon`.
+- **Try a known location quickly**: click "Try Los Angeles, California."
 
 ## Security and privacy notes
 
@@ -138,6 +149,7 @@ iOS may not show `beforeinstallprompt`, so the app includes docs and avoids aggr
 - No secrets are committed.
 - App is client-only; weather history and locations are stored only on-device.
 - Service worker caches only app shell assets, not third-party API payloads.
+- No personal geodata is hardcoded in examples; Los Angeles is used for sample UX.
 
 ## Limitations
 

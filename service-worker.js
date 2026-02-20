@@ -1,4 +1,4 @@
-const CACHE_NAME = "zweather-shell-v1";
+const CACHE_NAME = "zweather-shell-v2";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const SHELL_ASSETS = [
   "./src/weather-codes.js",
   "./icons/icon-192.svg",
   "./icons/icon-512.svg",
+  "./media/honesty-radar.svg",
 ];
 
 self.addEventListener("install", (event) => {
