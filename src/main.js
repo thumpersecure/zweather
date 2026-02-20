@@ -136,7 +136,12 @@ function setLoading(loading, label = "Refresh forecast") {
   elements.refreshButton.disabled = loading || !state.currentLocation;
   elements.quickRefreshButton.disabled = loading || !state.currentLocation;
   elements.compareLatestButton.disabled = loading || !state.currentLocation;
-  elements.refreshButton.textContent = loading ? "Refreshing..." : label;
+  elements.refreshButton.textContent = loading ? "Refreshing\u2026" : label;
+  if (loading) {
+    elements.refreshButton.classList.add("loading-pulse");
+  } else {
+    elements.refreshButton.classList.remove("loading-pulse");
+  }
 }
 
 function updateOfflineBadge() {
@@ -171,6 +176,31 @@ function readSnapshotPair() {
   state.snapshots = getSnapshotsForLocation(state.currentLocation.id);
   state.currentSnapshot = state.snapshots[0] ?? null;
   state.previousSnapshot = state.snapshots[1] ?? null;
+}
+
+function animateValue(element, endValue, duration = 600) {
+  const text = String(endValue);
+  const numericMatch = text.match(/^(\d+)/);
+  if (!numericMatch) {
+    element.textContent = text;
+    return;
+  }
+  const target = parseInt(numericMatch[1], 10);
+  const suffix = text.slice(numericMatch[1].length);
+  const start = performance.now();
+  const currentValue = parseInt(element.textContent, 10) || 0;
+
+  function step(timestamp) {
+    const elapsed = timestamp - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(currentValue + (target - currentValue) * eased);
+    element.textContent = `${value}${suffix}`;
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
 }
 
 function renderNowCard() {
@@ -232,16 +262,23 @@ function renderHonestyReport() {
   };
   const score =
     confidence.label === "Unknown" ? "--" : `${Math.max(0, Math.round(confidence.score))}/100`;
-  elements.stabilityScore.textContent = score;
+
+  if (score !== "--") {
+    animateValue(elements.stabilityScore, score);
+  } else {
+    elements.stabilityScore.textContent = score;
+  }
+
   elements.stabilityReason.textContent =
     confidence.reason || "Confidence is based on stability across snapshots.";
   elements.stabilityMeter.style.width =
     confidence.label === "Unknown" ? "4%" : `${Math.max(4, Math.round(confidence.score))}%`;
-  elements.metricChanged.textContent = String(metrics.changedWindows ?? 0);
-  elements.metricUnchanged.textContent = String(metrics.unchangedWindows ?? 0);
+
+  animateValue(elements.metricChanged, String(metrics.changedWindows ?? 0));
+  animateValue(elements.metricUnchanged, String(metrics.unchangedWindows ?? 0));
   elements.metricLargest.textContent = getLargestChangeLabel(metrics);
-  elements.metricAlerts.textContent = String(metrics.alertsChanges ?? 0);
-  elements.metricSnapshots.textContent = String(state.snapshots.length);
+  animateValue(elements.metricAlerts, String(metrics.alertsChanges ?? 0));
+  animateValue(elements.metricSnapshots, String(state.snapshots.length));
 }
 
 function renderTemperatureTrend() {
@@ -297,21 +334,45 @@ function renderTemperatureTrend() {
   const startLabel = formatClock(trendRows[0].row.time, state.settings.timeFormat);
   const endLabel = formatClock(trendRows[trendRows.length - 1].row.time, state.settings.timeFormat);
   const unitSymbol = state.settings.temperatureUnit === "fahrenheit" ? "F" : "C";
+  const lineLength = points.reduce((acc, p, i) => {
+    if (i === 0) return 0;
+    const dx = p[0] - points[i - 1][0];
+    const dy = p[1] - points[i - 1][1];
+    return acc + Math.sqrt(dx * dx + dy * dy);
+  }, 0);
+
   elements.tempTrend.innerHTML = `
     <svg class="trend-svg" viewBox="0 0 ${width} ${height}" aria-label="Temperature trend chart">
+      <defs>
+        <linearGradient id="trend-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3" />
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.02" />
+        </linearGradient>
+      </defs>
       <g class="trend-grid">
         <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" />
         <line x1="${padding}" y1="${midY}" x2="${width - padding}" y2="${midY}" />
         <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
       </g>
-      <path class="trend-area" d="${areaPath}" />
-      <polyline class="trend-line" points="${polyline}" />
-      <circle class="trend-dot" cx="${points[0][0].toFixed(2)}" cy="${points[0][1].toFixed(2)}" r="3.2" />
-      <circle class="trend-dot" cx="${points[points.length - 1][0].toFixed(2)}" cy="${points[points.length - 1][1].toFixed(2)}" r="3.2" />
-      <text x="${padding}" y="${height - 3}" fill="currentColor" font-size="10">${startLabel}</text>
-      <text x="${width - padding}" y="${height - 3}" fill="currentColor" font-size="10" text-anchor="end">${endLabel}</text>
+      <path class="trend-area" d="${areaPath}" fill="url(#trend-grad)" />
+      <polyline class="trend-line trend-line-animated" points="${polyline}"
+        stroke-dasharray="${lineLength.toFixed(1)}"
+        stroke-dashoffset="${lineLength.toFixed(1)}" />
+      <circle class="trend-dot" cx="${points[0][0].toFixed(2)}" cy="${points[0][1].toFixed(2)}" r="3.5" />
+      <circle class="trend-dot" cx="${points[points.length - 1][0].toFixed(2)}" cy="${points[points.length - 1][1].toFixed(2)}" r="3.5" />
+      <text x="${padding}" y="${height - 3}" fill="var(--muted)" font-size="10">${startLabel}</text>
+      <text x="${width - padding}" y="${height - 3}" fill="var(--muted)" font-size="10" text-anchor="end">${endLabel}</text>
     </svg>
   `;
+
+  requestAnimationFrame(() => {
+    const line = elements.tempTrend.querySelector(".trend-line-animated");
+    if (line) {
+      line.style.transition = "stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1)";
+      line.style.strokeDashoffset = "0";
+    }
+  });
+
   elements.trendSummary.textContent = `Range ${Math.round(minValue)} to ${Math.round(maxValue)} ${unitSymbol} across the next ${trendRows.length} hours.`;
 }
 
@@ -331,8 +392,9 @@ function renderTodayList() {
     return;
   }
 
-  for (const hour of nextHours) {
+  for (const [index, hour] of nextHours.entries()) {
     const item = createElement("li", "forecast-row");
+    item.style.animationDelay = `${index * 40}ms`;
     const label = createElement(
       "strong",
       "",
@@ -361,8 +423,9 @@ function renderWeekList() {
     elements.weekList.append(createElement("li", "muted", "No daily rows available."));
     return;
   }
-  for (const day of dailyRows.slice(0, 7)) {
+  for (const [index, day] of dailyRows.slice(0, 7).entries()) {
     const item = createElement("li", "forecast-row");
+    item.style.animationDelay = `${index * 50}ms`;
     const date = createElement("strong", "", formatDayLabel(day.date));
     const details = createElement("div", "forecast-meta");
     details.append(
@@ -386,19 +449,19 @@ function formatDiffMessage(change) {
     return "";
   }
   if (change.type === "temperature") {
-    return `${change.label}: temperature changed ${formatTemperature(change.from, state.settings.temperatureUnit)} -> ${formatTemperature(change.to, state.settings.temperatureUnit)} since ${since}.`;
+    return `${change.label}: temperature changed ${formatTemperature(change.from, state.settings.temperatureUnit)} \u2192 ${formatTemperature(change.to, state.settings.temperatureUnit)} since ${since}.`;
   }
   if (change.type === "wind") {
-    return `${change.label}: wind changed ${formatWind(change.from, state.settings.windUnit)} -> ${formatWind(change.to, state.settings.windUnit)} since ${since}.`;
+    return `${change.label}: wind changed ${formatWind(change.from, state.settings.windUnit)} \u2192 ${formatWind(change.to, state.settings.windUnit)} since ${since}.`;
   }
   if (change.type === "precip_probability") {
-    return `${change.label}: precip chance changed ${formatPercent(change.from)} -> ${formatPercent(change.to)} since ${since}.`;
+    return `${change.label}: precip chance changed ${formatPercent(change.from)} \u2192 ${formatPercent(change.to)} since ${since}.`;
   }
   if (change.type === "precip_amount") {
-    return `${change.label}: precip amount changed ${formatMillimeters(change.from)} -> ${formatMillimeters(change.to)} since ${since}.`;
+    return `${change.label}: precip amount changed ${formatMillimeters(change.from)} \u2192 ${formatMillimeters(change.to)} since ${since}.`;
   }
   if (change.type === "condition") {
-    return `${change.label}: condition changed "${change.from}" -> "${change.to}" since ${since}.`;
+    return `${change.label}: condition changed "${change.from}" \u2192 "${change.to}" since ${since}.`;
   }
   return change.message;
 }
@@ -438,8 +501,9 @@ function renderChanges() {
     elements.noChanges.classList.remove("hidden");
     return;
   }
-  for (const change of state.diff.summary) {
+  for (const [index, change] of state.diff.summary.entries()) {
     const item = createElement("li", `change-item ${change.type}`);
+    item.style.animationDelay = `${index * 50}ms`;
     const head = createElement("div", "change-head");
     head.append(
       createElement("span", "change-tag", formatChangeTag(change.type)),
@@ -458,6 +522,7 @@ function renderTimeline() {
   }
   for (const [index, snapshot] of state.snapshots.slice(0, 10).entries()) {
     const item = createElement("li", "");
+    item.style.animationDelay = `${index * 60}ms`;
     const prefix = index === 0 ? "Latest" : `Snapshot ${index + 1}`;
     const stamp = createElement("time", "", formatDateTime(snapshot.fetchedAt, state.settings.timeFormat));
     stamp.dateTime = snapshot.fetchedAt;
@@ -567,6 +632,7 @@ function renderSearchResults() {
     const button = createElement("button", "", result.name);
     button.type = "button";
     button.dataset.index = String(index);
+    button.style.animationDelay = `${index * 40}ms`;
     button.addEventListener("click", async () => {
       await selectLocation(result);
       state.searchResults = [];
@@ -854,9 +920,29 @@ function setupServiceWorker() {
       try {
         await navigator.serviceWorker.register("./service-worker.js");
       } catch {
-        // Service worker registration failure should not break core app usage.
+        // Registration failure should not break core app usage.
       }
     });
+  }
+}
+
+function setupScrollReveal() {
+  if (!("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("revealed");
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+  );
+  const panels = document.querySelectorAll(".panel");
+  for (const panel of panels) {
+    panel.classList.add("reveal-target");
+    observer.observe(panel);
   }
 }
 
@@ -911,6 +997,7 @@ async function init() {
   setupEventListeners();
   setupInstallPrompt();
   setupServiceWorker();
+  setupScrollReveal();
 
   if (state.currentLocation) {
     readSnapshotPair();
