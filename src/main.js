@@ -928,16 +928,21 @@ function setupServiceWorker() {
 
 function setupScrollReveal() {
   if (!("IntersectionObserver" in window)) return;
+
+  let revealIndex = 0;
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
+          const delay = revealIndex * 60;
+          revealIndex += 1;
+          entry.target.style.transitionDelay = `${delay}ms`;
           entry.target.classList.add("revealed");
           observer.unobserve(entry.target);
         }
       }
     },
-    { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    { threshold: 0.05, rootMargin: "0px 0px -30px 0px" }
   );
   const panels = document.querySelectorAll(".panel");
   for (const panel of panels) {
