@@ -17,12 +17,6 @@ export function roundCoordinate(value) {
   return Math.round(Number(value) * 10000) / 10000;
 }
 
-export function locationIdFromLatLon(lat, lon) {
-  const safeLat = roundCoordinate(lat);
-  const safeLon = roundCoordinate(lon);
-  return `${safeLat},${safeLon}`;
-}
-
 export function cToF(valueC) {
   return (Number(valueC) * 9) / 5 + 32;
 }
@@ -60,14 +54,6 @@ export function formatMillimeters(value) {
     return "--";
   }
   return `${Number(value).toFixed(1)} mm`;
-}
-
-export function asIsoDate(input) {
-  const date = input instanceof Date ? input : new Date(input);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
 }
 
 export function formatDateTime(value, timeFormat = "24h") {
